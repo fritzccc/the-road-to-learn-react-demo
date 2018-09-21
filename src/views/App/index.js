@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './App.css';
+import {sortBy} from 'lodash';
 import {
   DEFAULT_QUERY,
   DEFAULT_HPP,
@@ -17,6 +18,21 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 library.add(faSpinner)
 
+const SORTS={
+  DEFAULT:arr=>arr,
+  TITLE:arr=>sortBy(arr,'title'),
+  AUTHOR:arr=>sortBy(arr,'author'),
+  COMMENTS: arr => sortBy(arr, 'num_comments').reverse(),
+  POINTS: arr => sortBy(arr, 'points').reverse(),
+}
+
+const withLoading=(Component)=>({isLoading,...rest})=>
+  isLoading ?
+  <Loading /> :
+  <Component {...rest} />
+
+const ButtonWithLoading=withLoading(Button);
+
 class App extends Component {
   constructor(props){
     super(props);
@@ -25,7 +41,8 @@ class App extends Component {
       searchTerm:DEFAULT_QUERY,
       searchKey:'',
       error:null,
-      isLoading:false
+      isLoading:false,
+      sortKey:'DEFAULT',
     }
   }
 
@@ -47,15 +64,16 @@ class App extends Component {
     });
   }
   fetchSearchTopStories=(searchTerm,page=0)=>{
-    this.setState({
-      isLoading:true
-    });
     const {results} = this.state;
-    if(!results || !results[searchTerm] || page!==0) 
+    if(!results || !results[searchTerm] || page!==0) {
+      this.setState({
+        isLoading:true
+      });
       fetch(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}${DEFAULT_HPP}`)
         .then(res=>res.json())
         .then(res=>this.setSearchTopStories(res))
         .catch(error=>this.setState({error}))
+    }
   }
   onDismiss=id=>{
     const {results,searchKey}=this.state;
@@ -73,6 +91,7 @@ class App extends Component {
     e.preventDefault();
     return false;
   }
+
   render() {
     const {results,searchTerm,searchKey,error,isLoading}=this.state;
     const page = (results && results[searchKey] && results[searchKey].page) || 0;
@@ -88,13 +107,9 @@ class App extends Component {
           : <p>Something went wrong.</p>
         }
         <div className="interactions">
-          {
-            isLoading ?
-            <Loading /> :
-            <Button onClick={() => this.fetchSearchTopStories(searchTerm, page + 1)}>
+          <ButtonWithLoading isLoading={isLoading} onClick={()=>this.fetchSearchTopStories(searchKey,page+1)}>
             More
-            </Button>
-          }
+          </ButtonWithLoading>
         </div>
       </div>
     );

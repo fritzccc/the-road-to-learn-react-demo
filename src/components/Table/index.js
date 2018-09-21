@@ -11,7 +11,7 @@ const midColumn = {
 const smallColumn = {
   width: '10%',
 };
-const Table = ({list,onDismiss}) =>{
+const Table = ({list,onDismiss,onSort}) =>{
   return (
     <div className="table">
       <div className="table-row table-header">
@@ -21,7 +21,7 @@ const Table = ({list,onDismiss}) =>{
         <span style={midColumn}>
           Author
         </span>
-        <span style={smallColumn}>
+        <span onClick={()=>{onSort('COMMENTS')}} style={smallColumn}>
           Comments
         </span>
         <span style={smallColumn}>
