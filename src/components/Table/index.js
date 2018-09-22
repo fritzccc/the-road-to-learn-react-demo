@@ -1,6 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Button from '../Button';
+import Sort from '../Sort';
+import {sortBy} from 'lodash';
+
 
 const largeColumn = {
   width: '40%',
@@ -11,28 +14,39 @@ const midColumn = {
 const smallColumn = {
   width: '10%',
 };
-const Table = ({list,onDismiss,onSort}) =>{
+
+const SORTS={
+  DEFAULT:arr=>arr,
+  TITLE:arr=>sortBy(arr,'title'),
+  AUTHOR:arr=>sortBy(arr,'author'),
+  COMMENTS: arr => sortBy(arr, 'num_comments').reverse(),
+  POINTS: arr => sortBy(arr, 'points').reverse(),
+}
+
+const Table = ({list,onDismiss,onSort,sortKey,isSortReverse}) =>{
+  const showData = isSortReverse ? 
+    SORTS[sortKey](list).reverse() :
+    SORTS[sortKey](list)
   return (
     <div className="table">
       <div className="table-row table-header">
         <span style={largeColumn}>
-          Title
+          <Sort onSort={onSort} sortKey={'TITLE'} activated={sortKey}>Title</Sort>
         </span>
         <span style={midColumn}>
-          Author
-        </span>
-        <span onClick={()=>{onSort('COMMENTS')}} style={smallColumn}>
-          Comments
+          <Sort onSort={onSort} sortKey={'AUTHOR'} activated={sortKey}>Author</Sort>
         </span>
         <span style={smallColumn}>
-          Points
+          <Sort onSort={onSort} sortKey={'COMMENTS'} activated={sortKey}>Comments</Sort>
         </span>
         <span style={smallColumn}>
-          Other
+          <Sort onSort={onSort} sortKey={'POINTS'} activated={sortKey}>Points</Sort>
+        </span>
+        <span style={smallColumn}>
         </span>
       </div>
     {
-      list.map(item =>
+      showData.map(item =>
         <div key={item.objectID} className="table-row">
           <span style={largeColumn}>
             <a href={item.url}>{item.title}</a>

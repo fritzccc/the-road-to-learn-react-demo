@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import './App.css';
-import {sortBy} from 'lodash';
 import {
   DEFAULT_QUERY,
   DEFAULT_HPP,
@@ -16,15 +15,8 @@ import Table from '../../components/Table'
 import Loading from '../../components/Loading'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+import classNames from 'classnames'
 library.add(faSpinner)
-
-const SORTS={
-  DEFAULT:arr=>arr,
-  TITLE:arr=>sortBy(arr,'title'),
-  AUTHOR:arr=>sortBy(arr,'author'),
-  COMMENTS: arr => sortBy(arr, 'num_comments').reverse(),
-  POINTS: arr => sortBy(arr, 'points').reverse(),
-}
 
 const withLoading=(Component)=>({isLoading,...rest})=>
   isLoading ?
@@ -43,6 +35,7 @@ class App extends Component {
       error:null,
       isLoading:false,
       sortKey:'DEFAULT',
+      isSortReverse:false,
     }
   }
 
@@ -75,6 +68,12 @@ class App extends Component {
         .catch(error=>this.setState({error}))
     }
   }
+
+  onSort=(sortKey,isSortReverse)=>{
+    isSortReverse=(sortKey==this.state.sortKey && !this.state.isSortReverse);
+    this.setState({sortKey,isSortReverse});
+  }
+
   onDismiss=id=>{
     const {results,searchKey}=this.state;
     const updatedHits = results[searchKey].hits.filter(data=>data.objectID!==id);
@@ -93,7 +92,7 @@ class App extends Component {
   }
 
   render() {
-    const {results,searchTerm,searchKey,error,isLoading}=this.state;
+    const {results,searchTerm,searchKey,error,isLoading,sortKey,isSortReverse}=this.state;
     const page = (results && results[searchKey] && results[searchKey].page) || 0;
     return (
       <div className="page">
@@ -103,7 +102,7 @@ class App extends Component {
           </Search>
         </div>
         {(!error && results && results[searchKey]) ? 
-            <Table list={results[searchKey].hits} searchTerm={searchTerm} onDismiss={this.onDismiss}/>
+            <Table list={results[searchKey].hits} isSortReverse={isSortReverse} sortKey={sortKey} onSort={this.onSort} searchTerm={searchTerm} onDismiss={this.onDismiss}/>
           : <p>Something went wrong.</p>
         }
         <div className="interactions">

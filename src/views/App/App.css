@@ -33,6 +33,7 @@ form span{
   border: 1px solid #e3e3e3;
 }
 .table-header > span {
+  cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
   padding: 0 5px;
