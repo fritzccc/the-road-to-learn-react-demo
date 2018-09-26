@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{Component} from 'react';
 import PropTypes from 'prop-types';
 import Button from '../Button';
 import Sort from '../Sort';
@@ -23,24 +23,40 @@ const SORTS={
   POINTS: arr => sortBy(arr, 'points').reverse(),
 }
 
-const Table = ({list,onDismiss,onSort,sortKey,isSortReverse}) =>{
-  const showData = isSortReverse ? 
-    SORTS[sortKey](list).reverse() :
-    SORTS[sortKey](list)
-  return (
-    <div className="table">
+class Table extends Component{
+  constructor(props){
+    super(props);
+    this.state={
+      sortKey:'DEFAULT',
+      isSortReverse:false,
+    };
+  }
+
+  onSort=(sortKey,isSortReverse)=>{
+    isSortReverse=(sortKey===this.state.sortKey && !this.state.isSortReverse);
+    this.setState({sortKey,isSortReverse});
+  }
+
+  render(){
+    const {list,onDismiss}=this.props;
+    const {sortKey,isSortReverse}=this.state;
+    const showData = isSortReverse ? 
+      SORTS[sortKey](list).reverse() :
+      SORTS[sortKey](list);
+    return (
+      <div className="table">
       <div className="table-row table-header">
         <span style={largeColumn}>
-          <Sort onSort={onSort} sortKey={'TITLE'} activated={sortKey}>Title</Sort>
+          <Sort onSort={this.onSort} sortKey={'TITLE'} activated={sortKey}>Title</Sort>
         </span>
         <span style={midColumn}>
-          <Sort onSort={onSort} sortKey={'AUTHOR'} activated={sortKey}>Author</Sort>
+          <Sort onSort={this.onSort} sortKey={'AUTHOR'} activated={sortKey}>Author</Sort>
         </span>
         <span style={smallColumn}>
-          <Sort onSort={onSort} sortKey={'COMMENTS'} activated={sortKey}>Comments</Sort>
+          <Sort onSort={this.onSort} sortKey={'COMMENTS'} activated={sortKey}>Comments</Sort>
         </span>
         <span style={smallColumn}>
-          <Sort onSort={onSort} sortKey={'POINTS'} activated={sortKey}>Points</Sort>
+          <Sort onSort={this.onSort} sortKey={'POINTS'} activated={sortKey}>Points</Sort>
         </span>
         <span style={smallColumn}>
         </span>
@@ -71,8 +87,10 @@ const Table = ({list,onDismiss,onSort,sortKey,isSortReverse}) =>{
         )
       }
     </div>
-  )
+    )
+  }
 }
+
 
 Table.propTypes = {
   list: PropTypes.arrayOf(

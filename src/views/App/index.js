@@ -15,7 +15,6 @@ import Table from '../../components/Table'
 import Loading from '../../components/Loading'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
-import classNames from 'classnames'
 library.add(faSpinner)
 
 const withLoading=(Component)=>({isLoading,...rest})=>
@@ -24,6 +23,16 @@ const withLoading=(Component)=>({isLoading,...rest})=>
   <Component {...rest} />
 
 const ButtonWithLoading=withLoading(Button);
+
+const updateSearchStories =({hits,page})=>prevState=>{
+  const {results,searchKey} = prevState;
+  const oldHits=results && results[searchKey] ? results[searchKey].hits:[];
+  const updatedHits =[...oldHits,...hits];
+  return {
+    results:{...results,[searchKey]:{hits:updatedHits,page}},
+    isLoading:false
+  }
+}
 
 class App extends Component {
   constructor(props){
@@ -34,8 +43,6 @@ class App extends Component {
       searchKey:'',
       error:null,
       isLoading:false,
-      sortKey:'DEFAULT',
-      isSortReverse:false,
     }
   }
 
@@ -46,15 +53,7 @@ class App extends Component {
   }
 
   setSearchTopStories=result=>{
-    const {results,searchKey} = this.state;
-    const {hits,page}=result;
-    const oldHits=results && results[searchKey] ? results[searchKey].hits:[];
-    const updatedHits =[...oldHits,...hits];
-    
-    this.setState({
-      results:{...results,[searchKey]:{hits:updatedHits,page}},
-      isLoading:false
-    });
+    this.setState(updateSearchStories(result));
   }
   fetchSearchTopStories=(searchTerm,page=0)=>{
     const {results} = this.state;
@@ -69,10 +68,7 @@ class App extends Component {
     }
   }
 
-  onSort=(sortKey,isSortReverse)=>{
-    isSortReverse=(sortKey==this.state.sortKey && !this.state.isSortReverse);
-    this.setState({sortKey,isSortReverse});
-  }
+
 
   onDismiss=id=>{
     const {results,searchKey}=this.state;
@@ -92,7 +88,7 @@ class App extends Component {
   }
 
   render() {
-    const {results,searchTerm,searchKey,error,isLoading,sortKey,isSortReverse}=this.state;
+    const {results,searchTerm,searchKey,error,isLoading}=this.state;
     const page = (results && results[searchKey] && results[searchKey].page) || 0;
     return (
       <div className="page">
@@ -102,7 +98,7 @@ class App extends Component {
           </Search>
         </div>
         {(!error && results && results[searchKey]) ? 
-            <Table list={results[searchKey].hits} isSortReverse={isSortReverse} sortKey={sortKey} onSort={this.onSort} searchTerm={searchTerm} onDismiss={this.onDismiss}/>
+            <Table list={results[searchKey].hits} searchTerm={searchTerm} onDismiss={this.onDismiss}/>
           : <p>Something went wrong.</p>
         }
         <div className="interactions">
